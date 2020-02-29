@@ -101,25 +101,28 @@ public class GameController : MonoBehaviour
             AnswerList[kanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
 
             //検証する入力ローマ字及び正解ローマ字を次へ
-            inputQueue.Dequeue();
-            try
+            spellIndex++;
+            foreach (string charCandidate in AnswerList[kanaIndex])
             {
-                spellIndex++;
+                if (spellIndex == charCandidate.Length)
+                {
+                    kanaIndex++;
+                    spellIndex = 0;
+                    if (kanaIndex == AnswerList.Count)
+                    {
+                        UnityEditor.EditorApplication.isPlaying = false;
+                    }
 
-            }
-            //
-            catch (IndexOutOfRangeException)
-            {
-                kanaIndex++;
-                spellIndex = 0;
+                }
             }
         }
         else
         {
 
-            Debug.Log("ミスタイプ");
-
+            Debug.Log("ミスタイプ : "+inputQueue.Peek());
+            
         }
+        inputQueue.Dequeue();
 
         //正解ローマ字入力候補が入力と一致するか
         bool IsMatchWithInputPeek(string s)
