@@ -3,7 +3,8 @@ using System.Linq;
 using System.Data.SQLite;
 using System.IO;
 using Newtonsoft.Json;
-using System.Diagnostics;
+using Unity;
+using UnityEngine;
 
 class AnswerGenerator
 {
@@ -13,19 +14,22 @@ class AnswerGenerator
     public string QuestionText { get; private set; }
     //UI表示に使うかもしれない、問題のひらがな表記
     public string QuestionKanaSpelling { get; private set; }
-    private Dictionary<string, string[]> RomajiKanaMap;
+    //出題文字列を文字ごとに切ったリスト
+    public List<string> CharList { get; private set; }
+    public Dictionary<string, string[]> RomajiKanaMap;
     private static int DataNum = 0;
     //重複した出題を防ぐための、既出問題インデックスリスト
     private static List<int> UsedRows = new List<int>();
+
     public AnswerGenerator(string jsonFilePath, string dbPath, string tableName)
     {
         //ローマ字から変換辞書を引数のjsonから辞書型に変換して生成
         RomajiKanaMap = GenerateKanaMapDictionary(jsonFilePath);
         SelectQuestion(dbPath, tableName);
-        List<string> questionHiraganaList = ParseHiraganaSentence(QuestionKanaSpelling);
-        Debug.WriteLine(QuestionKanaSpelling);
+        List<string> CharList = ParseHiraganaSentence(QuestionKanaSpelling);
+        //Debug.Log(QuestionKanaSpelling);
         //データベースから取得したかな文字列から入力候補リストを生成
-        AnswerRomajiInputSpellingList = ConstructSentence(questionHiraganaList);
+        AnswerRomajiInputSpellingList = ConstructSentence(CharList);
     }
 
     //指定されたjsonファイル(パス)からローマ字かな変換用辞書を作成
@@ -70,7 +74,7 @@ class AnswerGenerator
                     row = r.Next(1, DataNum + 1);
                 } while (UsedRows.Contains(row));
                 UsedRows.Add(row);
-                command.CommandText = "select slang,spell from " + tableName + " limit 1 offset " + (row - 1).ToString();
+                command.CommandText = "select text,kana from " + tableName + " limit 1 offset " + (row - 1).ToString();
                 using (SQLiteDataReader returnedSdr = command.ExecuteReader())
                 {
                     foreach (var _ in returnedSdr)
@@ -98,6 +102,7 @@ class AnswerGenerator
         while (i < str.Length)
         {
             uni = str[i].ToString();
+            //末尾以外のかなには一度biを生成・末尾のbiは空文字列(以下ですべての場合にbiをチェックするため、biがなくても生成しておく)
             if (i + 1 < str.Length)
             {
                 bi = str[i].ToString() + str[i + 1].ToString();
@@ -105,7 +110,9 @@ class AnswerGenerator
             else
             {
                 bi = "";
-            }//生成した部分かな文字列が辞書にヒットしたら区切りを確定・インデックスを進める、ヒットしなければ区切らず、一つずらして再チェック
+            }
+            
+            //一度生成したbiが辞書にヒットしたら区切りを確定・かな単位リストにbiで登録してインデックスを進める、ヒットしなければuniで登録し、一つずらして再チェック(末尾の文字はbiが空文字列なので必ずヒットせずuniが登録される)
             if (RomajiKanaMap.ContainsKey(bi))
             {
                 i += 2;
@@ -127,7 +134,7 @@ class AnswerGenerator
         var ret = new List<List<string>>();
         //現在・および次のかな
         string s, ns;
-        //入力された仮名について
+        //入力された各仮名について
         for (int i = 0; i < str.Count; ++i)
         {
             //i文字目のかなをsに
@@ -167,12 +174,13 @@ class AnswerGenerator
                 }
                 foreach (var t in nList)
                 {
-                    if (!isValidSingleN && t.Equals("n"))
+                    if (!isValidSingleN && t.Equals("N"))
                     {
                         continue;
                     }
                     tmpList.Add(t);
                 }
+                //Debug.Log(s+", "+i+", "+isValidSingleN);
             }
             // っ の処理
             else if (s.Equals("っ"))
@@ -194,7 +202,7 @@ class AnswerGenerator
                 tmpList = smallTsulTypeList;
             }
             // ちゃ などのように tya, cha や ち + ゃ を許容するパターン。sが二文字（一気にかな2文字分入力）で1文字目が「ん」でない
-            else if (s.Length == 2 && !string.Equals("ん", s[0]))
+            else if (s.Length == 2 && !Equals("ん", s[0]))
             {
                 // ちゃ などとそのまま打つパターンの生成
                 tmpList = tmpList.Concat(RomajiKanaMap[s]).ToList();
