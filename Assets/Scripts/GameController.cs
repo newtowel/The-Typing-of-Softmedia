@@ -33,7 +33,7 @@ public class GameController : MonoBehaviour
     private Dictionary<string, string[]> RomanMap { get; set; }
     //上の文字が追加された時刻（平均秒速打数算出用？）
     private Queue<float> timeQueue = new Queue<float>();
-    private readonly string romajiKanaMapPath = Application.streamingAssetsPath + "/roman_map.json";
+    private readonly string romajiKanaMapPath = Application.streamingAssetsPath + "/roman_map2.json";
     //データベース名・テーブル名。問題取得時に用いる。暫定版
     private readonly string tableName = "trend_words";
     private readonly string dbPath = Application.streamingAssetsPath + "/jp_sentence.db";
@@ -78,11 +78,12 @@ public class GameController : MonoBehaviour
 
     {
         Event e = Event.current;
-
+        Debug.Log(e.character);
+        Debug.Log("一週目終わり");
         //キー入力が有効な状態でキーが押下され（キーが上がった瞬間も除外）、何らかの（既知の）キーコードが認識
-        if (isInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && e.keyCode != KeyCode.None && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
+        if (isInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
         {
-            var keyCode = e.keyCode.ToString();
+            char inputChar = e.character;
 
             //新しい問題文が表示されてから1文字目を打つまでのレイテンシは計測時間に含めない
             if (isFirstInput)
@@ -92,12 +93,15 @@ public class GameController : MonoBehaviour
             }
             //inputQueue.Enqueue(e.keyCode);
             timeQueue.Enqueue(Time.realtimeSinceStartup);
-            Judge(keyCode); 
+            if (inputChar != '\0')
+            {
+                Judge(inputChar);
+            }
         }
     }
 
     
-    void Judge(string input)
+    void Judge(char input)
     {
         //正解のローマ字入力候補のいずれかが入力ローマ字と一致する
         if (AnswerList[kanaIndex].Count(IsMatchWithInputPeek) != 0)
@@ -107,6 +111,7 @@ public class GameController : MonoBehaviour
 
             foreach (string charCandidate in AnswerList[kanaIndex])
             {
+                /*
                 //正解したローマ字を出力
                 //記号の場合、入力が特殊なので入力をそのまま出力できない
                 if (isMark)
@@ -123,6 +128,9 @@ public class GameController : MonoBehaviour
                     //検証する入力ローマ字及び正解ローマ字を次へ
                     spellIndex++;
                 }
+                */
+                CorrectRomaji.text += input;
+                spellIndex++;
 
                 //一文字分チェックし終われば次の文字へ
                 if (spellIndex == charCandidate.Length)
@@ -151,6 +159,7 @@ public class GameController : MonoBehaviour
         //正解ローマ字入力候補が入力と一致するか
         bool IsMatchWithInputPeek(string s)
         {
+            /*
             //次の候補文字列の1文字目と一致→かなである
             if (input == s[spellIndex].ToString())
             {
@@ -165,6 +174,15 @@ public class GameController : MonoBehaviour
                 return true;
             }
             //いづれとも一致しない→ミスタイプ
+            else
+            {
+                return false;
+            }
+            */
+            if (input == s[spellIndex])
+            {
+                return true;
+            }
             else
             {
                 return false;

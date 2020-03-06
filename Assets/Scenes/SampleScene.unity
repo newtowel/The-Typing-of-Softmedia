@@ -156,7 +156,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -50}
-  m_SizeDelta: {x: 160, y: 30}
+  m_SizeDelta: {x: 600, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &39986942
 MonoBehaviour:
@@ -186,10 +186,10 @@ MonoBehaviour:
     m_Alignment: 1
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 1
+    m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "\u6B63\u89E3\u30ED\u30FC\u30DE\u5B57\u51FA\u529B"
+  m_Text: "\u6B63\u89E3\u30ED\u30FC\u30DE\u5B57"
 --- !u!222 &39986943
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -327,10 +327,10 @@ MonoBehaviour:
     m_Alignment: 1
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 1
+    m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "\u554F\u984C\u304B\u306A\u51FA\u529B"
+  m_Text: "\u554F\u984C\u304B\u306A"
 --- !u!222 &904740317
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -356,7 +356,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 20}
-  m_SizeDelta: {x: 160, y: 30}
+  m_SizeDelta: {x: 700, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1309147382
 GameObject:
@@ -371,6 +371,7 @@ GameObject:
   - component: {fileID: 1309147384}
   - component: {fileID: 1309147383}
   - component: {fileID: 1309147387}
+  - component: {fileID: 1309147388}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -475,6 +476,18 @@ MonoBehaviour:
   ProblemKana: {fileID: 904740316}
   ProblemText: {fileID: 2062635284}
   CorrectRomaji: {fileID: 39986942}
+--- !u!114 &1309147388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1309147382}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57c065066e0bcc0468a0177834fe50c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1351389695
 GameObject:
   m_ObjectHideFlags: 0
@@ -576,7 +589,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 100}
-  m_SizeDelta: {x: 160, y: 30}
+  m_SizeDelta: {x: 700, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2062635284
 MonoBehaviour:
@@ -606,10 +619,10 @@ MonoBehaviour:
     m_Alignment: 1
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 1
+    m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "\u554F\u984C\u51FA\u529B"
+  m_Text: "\u554F\u984C"
 --- !u!222 &2062635285
 CanvasRenderer:
   m_ObjectHideFlags: 0

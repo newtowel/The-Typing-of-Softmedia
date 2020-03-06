@@ -2,6 +2,7 @@ ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
     - GameController
+    - ShiftTest
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
     - UnityEditor.Tilemaps.GridPaletteBrushes
@@ -41,17 +42,19 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 11214}
+      Script: {instanceID: 11212}
     - Class: 114
-      Script: {instanceID: 11428}
+      Script: {instanceID: 11426}
     - Class: 114
-      Script: {instanceID: 11990}
+      Script: {instanceID: 11988}
     - Class: 114
-      Script: {instanceID: 12432}
+      Script: {instanceID: 12430}
     - Class: 114
-      Script: {instanceID: 13108}
+      Script: {instanceID: 13106}
     - Class: 114
-      Script: {instanceID: 13578}
+      Script: {instanceID: 13576}
+    - Class: 114
+      Script: {instanceID: 14614}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -633,6 +636,12 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: ShiftTest
   platform: 19
   scenePathNames:
   - Assets/Scenes/SampleScene.unity

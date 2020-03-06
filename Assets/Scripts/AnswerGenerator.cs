@@ -66,7 +66,12 @@ class AnswerGenerator
 
                 }
 
-                //重複しないように問題選択重複しないように問題選択
+                //重複しないように問題選択
+                if (UsedRows.Count == DataNum)
+                {
+                    Debug.Log("全問解答");
+                    UsedRows.Clear();
+                }
                 do
                 {
                     var r = new System.Random();
@@ -174,7 +179,7 @@ class AnswerGenerator
                 }
                 foreach (var t in nList)
                 {
-                    if (!isValidSingleN && t.Equals("N"))
+                    if (!isValidSingleN && t.Equals("n"))
                     {
                         continue;
                     }
