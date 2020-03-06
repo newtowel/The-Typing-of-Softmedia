@@ -16,7 +16,7 @@ class AnswerGenerator
     public string QuestionKanaSpelling { get; private set; }
     //出題文字列を文字ごとに切ったリスト
     public List<string> CharList { get; private set; }
-    public Dictionary<string, string[]> RomajiKanaMap;
+    public Dictionary<string, string[]> RomajiKanaMap { get; private set; }
     private static int DataNum = 0;
     //重複した出題を防ぐための、既出問題インデックスリスト
     private static List<int> UsedRows = new List<int>();
@@ -27,7 +27,7 @@ class AnswerGenerator
         RomajiKanaMap = GenerateKanaMapDictionary(jsonFilePath);
         SelectQuestion(dbPath, tableName);
         List<string> CharList = ParseHiraganaSentence(QuestionKanaSpelling);
-        //Debug.Log(QuestionKanaSpelling);
+        Debug.Log(QuestionKanaSpelling);
         //データベースから取得したかな文字列から入力候補リストを生成
         AnswerRomajiInputSpellingList = ConstructSentence(CharList);
     }

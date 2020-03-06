@@ -12,30 +12,31 @@ using System.Diagnostics.Eventing.Reader;
 using System.Text.RegularExpressions;
 public class GameController : MonoBehaviour
 {
-    public Text ProblemKana;
-    public Text ProblemText;
+    [SerializeField]
+    Text ProblemKana;
+    [SerializeField]
+    Text ProblemText;
     //入力した文字を表示するText
-    public Text CorrectRomaji;
+    [SerializeField]
+    Text CorrectRomaji;
     //入力を受け付けてよいか
-    private bool isInputValid;
+    private bool isInputValid { get; set; }
     //文字を入力し始めてからの経過時間
-    private float firstCharInputTime;
+    private float firstCharInputTime { get; set; }
     //その文字が最初の人文字目であるかのチェック
-    private bool isFirstInput;
+    private bool isFirstInput { get; set; }
     //変換辞書をもとに生成された入力候補リスト
-    private static List<List<string>> AnswerList;
+    private static List<List<string>> AnswerList { get; set; }
     //出題文字列を文字ごとに区切ったリスト
-    private List<string> CharList;
+    private List<string> CharList { get; set; }
     //ローマ字仮名対応辞書
-    private Dictionary<string, string[]> RomanMap;
-    //入力されたローマ字を保持するキュー
-    private Queue<KeyCode> inputQueue = new Queue<KeyCode>();
+    private Dictionary<string, string[]> RomanMap { get; set; }
     //上の文字が追加された時刻（平均秒速打数算出用？）
     private Queue<float> timeQueue = new Queue<float>();
     private readonly string romajiKanaMapPath = Application.streamingAssetsPath + "/roman_map.json";
     //データベース名・テーブル名。問題取得時に用いる。暫定版
-    private readonly string tableName = "special_characters";
-    private readonly string dbPath = Application.streamingAssetsPath + "/special_characters.db";
+    private readonly string tableName = "trend_words";
+    private readonly string dbPath = Application.streamingAssetsPath + "/jp_sentence.db";
     private static int spellIndex = 0;
     private static int kanaIndex = 0;
     private static bool isMark = false;
@@ -46,6 +47,7 @@ public class GameController : MonoBehaviour
     {
         ProblemText = transform.Find("ProblemText").GetComponent<Text>();
         ProblemKana = transform.Find("ProblemKana").GetComponent<Text>();
+        CorrectRomaji = transform.Find("CorrectRomaji").GetComponent<Text>();
         OutputQ();
     }
 
@@ -131,6 +133,7 @@ public class GameController : MonoBehaviour
                     if (kanaIndex == AnswerList.Count)
                     {
                         kanaIndex = 0;
+                        //Debug.Log("次の問題は"+);
                         OutputQ();
                     }
 
