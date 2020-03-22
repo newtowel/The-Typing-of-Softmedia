@@ -19,6 +19,11 @@ public class GameController : MonoBehaviour
     //入力した文字を表示するText
     [SerializeField]
     Text CorrectRomaji;
+    [SerializeField]
+    Text Combo;
+    //ミスタイプ時エフェクト
+    [SerializeField]
+    Image MissEffect;
     //入力を受け付けてよいか
     private bool isInputValid { get; set; }
     //文字を入力し始めてからの経過時間
@@ -39,8 +44,10 @@ public class GameController : MonoBehaviour
     private readonly string dbPath = Application.streamingAssetsPath + "/jp_sentence.db";
     private static int spellIndex = 0;
     private static int kanaIndex = 0;
-    private static bool isMark = false;
-
+    private static int comboNum = 0;
+    private static int maxCombo = 0;
+    private static int correctNum = 0;
+    private static int wrongNum = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -48,6 +55,8 @@ public class GameController : MonoBehaviour
         ProblemText = transform.Find("ProblemText").GetComponent<Text>();
         ProblemKana = transform.Find("ProblemKana").GetComponent<Text>();
         CorrectRomaji = transform.Find("CorrectRomaji").GetComponent<Text>();
+        Combo = transform.Find("Combo").GetComponent<Text>();
+        MissEffect = transform.Find("MissEffect").GetComponent<Image>();
         OutputQ();
     }
 
@@ -62,24 +71,13 @@ public class GameController : MonoBehaviour
         RomanMap = ag.RomajiKanaMap;
         CorrectRomaji.text = "";
         isInputValid = true;
-        /*
-        foreach (var item in AnswerList)
-        {
-            foreach (var item2 in item)
-            {
-                Debug.Log(item2 + "");
-            }    
-        }
-        */
-
+        
     }
 
     void OnGUI()
 
     {
         Event e = Event.current;
-        Debug.Log(e.character);
-        Debug.Log("一週目終わり");
         //キー入力が有効な状態でキーが押下され（キーが上がった瞬間も除外）、何らかの（既知の）キーコードが認識
         if (isInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
         {
@@ -106,29 +104,18 @@ public class GameController : MonoBehaviour
         //正解のローマ字入力候補のいずれかが入力ローマ字と一致する
         if (AnswerList[kanaIndex].Count(IsMatchWithInputPeek) != 0)
         {
+            correctNum++;
+            comboNum++;
+            Combo.text = comboNum + " Combo!";
+            if (comboNum > maxCombo)
+            {
+                maxCombo = comboNum;
+            }
             //現在の入力に一致しない正解候補リストを排除
             AnswerList[kanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
 
             foreach (string charCandidate in AnswerList[kanaIndex])
             {
-                /*
-                //正解したローマ字を出力
-                //記号の場合、入力が特殊なので入力をそのまま出力できない
-                if (isMark)
-                {
-                    //ローマ字仮名変換表の中で入力を要素に持つキーを出力
-                    CorrectRomaji.text += RomanMap.First(x => x.Value.Contains(input)).Key;
-                    //判定(実際に入力される)文字列は1文字でないので、見るインデックスを飛ばし、次巡で次のかなのチェックに行くように
-                    spellIndex = charCandidate.Length;
-                    isMark = false;
-                }
-                else
-                {
-                    CorrectRomaji.text += input;
-                    //検証する入力ローマ字及び正解ローマ字を次へ
-                    spellIndex++;
-                }
-                */
                 CorrectRomaji.text += input;
                 spellIndex++;
 
@@ -141,7 +128,6 @@ public class GameController : MonoBehaviour
                     if (kanaIndex == AnswerList.Count)
                     {
                         kanaIndex = 0;
-                        //Debug.Log("次の問題は"+);
                         OutputQ();
                     }
 
@@ -151,7 +137,10 @@ public class GameController : MonoBehaviour
         }
         else
         {
-
+            comboNum = 0;
+            wrongNum++;
+            StartCoroutine(FlashOnMiss());
+            Combo.text = "";
             Debug.Log("ミスタイプ : " + input);
             
         }
@@ -159,34 +148,7 @@ public class GameController : MonoBehaviour
         //正解ローマ字入力候補が入力と一致するか
         bool IsMatchWithInputPeek(string s)
         {
-            /*
-            //次の候補文字列の1文字目と一致→かなである
-            if (input == s[spellIndex].ToString())
-            {
-                Debug.Log(input+"はかな");
-                return true;
-            }
-            //1文字目と一致せず、かつ全体と一致→記号である
-            else if (input == s)
-            {
-                Debug.Log(input+"は記号");
-                isMark = true;
-                return true;
-            }
-            //いづれとも一致しない→ミスタイプ
-            else
-            {
-                return false;
-            }
-            */
-            if (input == s[spellIndex])
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return input == s[spellIndex];
         }
         //入力と不一致か
         bool IsNOTMatchWithInputPeek(string s)
@@ -208,5 +170,12 @@ public class GameController : MonoBehaviour
     void Update()
     {
         if (Input.GetKey(KeyCode.Escape)) Quit();
+    }
+
+    IEnumerator FlashOnMiss()
+    {
+        MissEffect.enabled = true;
+        yield return new WaitForSeconds(0.2f);
+        MissEffect.enabled = false;
     }
 }
