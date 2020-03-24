@@ -2,14 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 using System.Linq;
-using System.Text;
-using System.Data.SQLite;
-using System.IO;
-using System.Runtime.Serialization.Json;
-using System.Diagnostics.Eventing.Reader;
-using System.Text.RegularExpressions;
+using UnityEngine.SceneManagement;
 public class GameController : MonoBehaviour
 {
     [SerializeField]
@@ -24,39 +18,51 @@ public class GameController : MonoBehaviour
     //ミスタイプ時エフェクト
     [SerializeField]
     Image MissEffect;
+    [SerializeField]
+    Text Timer;
+
+    public int SpellIndex { get; private set; }
+    public int KanaIndex { get; private set; }
+    public static int MaxCombo { get; private set; }
+    public static int CorrectNum { get; private set; }
+    public static int MissNum { get; private set; }
+    public static Queue<float> timeQueue { get; private set; }
+
     //入力を受け付けてよいか
-    private bool isInputValid { get; set; }
+    private bool IsInputValid { get; set; }
     //文字を入力し始めてからの経過時間
-    private float firstCharInputTime { get; set; }
+    private float FirstCharInputTime { get; set; }
     //その文字が最初の人文字目であるかのチェック
-    private bool isFirstInput { get; set; }
+    private bool IsFirstInput { get; set; }
     //変換辞書をもとに生成された入力候補リスト
-    private static List<List<string>> AnswerList { get; set; }
-    //出題文字列を文字ごとに区切ったリスト
-    private List<string> CharList { get; set; }
-    //ローマ字仮名対応辞書
-    private Dictionary<string, string[]> RomanMap { get; set; }
+    private List<List<string>> AnswerList { get; set; }
     //上の文字が追加された時刻（平均秒速打数算出用？）
-    private Queue<float> timeQueue = new Queue<float>();
-    private readonly string romajiKanaMapPath = Application.streamingAssetsPath + "/roman_map2.json";
+    private readonly string romajiKanaMapPath = Application.streamingAssetsPath + "/roman_map.json";
     //データベース名・テーブル名。問題取得時に用いる。暫定版
-    private readonly string tableName = "trend_words";
+    private readonly string tableName = "another_list";
     private readonly string dbPath = Application.streamingAssetsPath + "/jp_sentence.db";
-    private static int spellIndex = 0;
-    private static int kanaIndex = 0;
-    private static int comboNum = 0;
-    private static int maxCombo = 0;
-    private static int correctNum = 0;
-    private static int wrongNum = 0;
+    private int ComboNum { get; set; }
+
+    //制限時間カウントダウン用
+    private float totalTime = 50;
+    private int seconds;
 
     // Start is called before the first frame update
     void Start()
     {
+        timeQueue = new Queue<float>();
+        SpellIndex = 0;
+        KanaIndex = 0;
+        ComboNum = 0;
+        MaxCombo = 0;
+        CorrectNum = 0;
+        MissNum = 0;
         ProblemText = transform.Find("ProblemText").GetComponent<Text>();
         ProblemKana = transform.Find("ProblemKana").GetComponent<Text>();
         CorrectRomaji = transform.Find("CorrectRomaji").GetComponent<Text>();
         Combo = transform.Find("Combo").GetComponent<Text>();
         MissEffect = transform.Find("MissEffect").GetComponent<Image>();
+        Timer = transform.Find("Timer").GetComponent<Text>();
         OutputQ();
     }
 
@@ -67,10 +73,8 @@ public class GameController : MonoBehaviour
         ProblemKana.text = ag.QuestionKanaSpelling;
         ProblemText.text = ag.QuestionText;
         AnswerList = ag.AnswerRomajiInputSpellingList;
-        CharList = ag.CharList;
-        RomanMap = ag.RomajiKanaMap;
         CorrectRomaji.text = "";
-        isInputValid = true;
+        IsInputValid = true;
         
     }
 
@@ -79,17 +83,18 @@ public class GameController : MonoBehaviour
     {
         Event e = Event.current;
         //キー入力が有効な状態でキーが押下され（キーが上がった瞬間も除外）、何らかの（既知の）キーコードが認識
-        if (isInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
+        if (IsInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
         {
             char inputChar = e.character;
 
             //新しい問題文が表示されてから1文字目を打つまでのレイテンシは計測時間に含めない
-            if (isFirstInput)
+            if (IsFirstInput)
             {
-                firstCharInputTime = Time.realtimeSinceStartup;
-                isFirstInput = false;
+                FirstCharInputTime = Time.realtimeSinceStartup;
+                IsFirstInput = false;
             }
             //inputQueue.Enqueue(e.keyCode);
+            Debug.Log(Time.realtimeSinceStartup);
             timeQueue.Enqueue(Time.realtimeSinceStartup);
             if (inputChar != '\0')
             {
@@ -102,32 +107,32 @@ public class GameController : MonoBehaviour
     void Judge(char input)
     {
         //正解のローマ字入力候補のいずれかが入力ローマ字と一致する
-        if (AnswerList[kanaIndex].Count(IsMatchWithInputPeek) != 0)
+        if (AnswerList[KanaIndex].Count(IsMatchWithInputPeek) != 0)
         {
-            correctNum++;
-            comboNum++;
-            Combo.text = comboNum + " Combo!";
-            if (comboNum > maxCombo)
+            CorrectNum++;
+            ComboNum++;
+            Combo.text = ComboNum + " Combo!";
+            if (ComboNum > MaxCombo)
             {
-                maxCombo = comboNum;
+                MaxCombo = ComboNum;
             }
             //現在の入力に一致しない正解候補リストを排除
-            AnswerList[kanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
+            AnswerList[KanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
 
-            foreach (string charCandidate in AnswerList[kanaIndex])
+            foreach (string charCandidate in AnswerList[KanaIndex])
             {
                 CorrectRomaji.text += input;
-                spellIndex++;
+                SpellIndex++;
 
                 //一文字分チェックし終われば次の文字へ
-                if (spellIndex == charCandidate.Length)
+                if (SpellIndex == charCandidate.Length)
                 {
-                    spellIndex = 0;
-                    kanaIndex++;
+                    SpellIndex = 0;
+                    KanaIndex++;
                     //出題文の末尾まで回答を終えたら次の問題を出題
-                    if (kanaIndex == AnswerList.Count)
+                    if (KanaIndex == AnswerList.Count)
                     {
-                        kanaIndex = 0;
+                        KanaIndex = 0;
                         OutputQ();
                     }
 
@@ -137,8 +142,8 @@ public class GameController : MonoBehaviour
         }
         else
         {
-            comboNum = 0;
-            wrongNum++;
+            ComboNum = 0;
+            MissNum++;
             StartCoroutine(FlashOnMiss());
             Combo.text = "";
             Debug.Log("ミスタイプ : " + input);
@@ -148,7 +153,7 @@ public class GameController : MonoBehaviour
         //正解ローマ字入力候補が入力と一致するか
         bool IsMatchWithInputPeek(string s)
         {
-            return input == s[spellIndex];
+            return input == s[SpellIndex];
         }
         //入力と不一致か
         bool IsNOTMatchWithInputPeek(string s)
@@ -170,6 +175,14 @@ public class GameController : MonoBehaviour
     void Update()
     {
         if (Input.GetKey(KeyCode.Escape)) Quit();
+
+        totalTime -= Time.deltaTime;
+        seconds = (int)totalTime;
+        Timer.text = seconds.ToString();
+        if (seconds == 0)
+        {
+            SceneManager.LoadScene("Result");
+        }
     }
 
     IEnumerator FlashOnMiss()

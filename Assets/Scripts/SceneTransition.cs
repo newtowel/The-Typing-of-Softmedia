@@ -26,18 +26,17 @@ public class SceneTransition : MonoBehaviour
         }
         if (isSpacePressed)
         {
-            Invoke("Transite", 3);
+            timerText.text = seconds.ToString();
             totalTime -= Time.deltaTime;
             seconds = (int)totalTime;
-            timerText.text = seconds.ToString();
+            if (seconds == 0)
+            {
+                SceneManager.LoadScene("Solution");
+            }
         }
 
         if (Input.GetKey(KeyCode.Escape)) Quit();
 
-    }
-    private void Transite()
-    {
-        SceneManager.LoadScene("Solution");
     }
     void Quit()
     {
