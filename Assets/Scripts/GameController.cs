@@ -21,21 +21,23 @@ public class GameController : MonoBehaviour
     [SerializeField]
     Text Timer;
 
-    public int SpellIndex { get; private set; }
-    public int KanaIndex { get; private set; }
     public static int MaxCombo { get; private set; }
     public static int CorrectNum { get; private set; }
     public static int MissNum { get; private set; }
-    public static Queue<float> timeQueue { get; private set; }
-
+    public static Queue<float> TimeQueue { get; private set; }
     //入力を受け付けてよいか
-    private bool IsInputValid { get; set; }
+    public static bool IsInputValid { get; private set; }
+
     //文字を入力し始めてからの経過時間
     private float FirstCharInputTime { get; set; }
     //その文字が最初の人文字目であるかのチェック
     private bool IsFirstInput { get; set; }
     //変換辞書をもとに生成された入力候補リスト
     private List<List<string>> AnswerList { get; set; }
+    //半角スペルの位置
+    private int SpellIndex { get; set; }
+    //何文字目のかなについて打っているか
+    private int KanaIndex { get; set; }
     //上の文字が追加された時刻（平均秒速打数算出用？）
     private readonly string romajiKanaMapPath = Application.streamingAssetsPath + "/roman_map.json";
     //データベース名・テーブル名。問題取得時に用いる。暫定版
@@ -44,13 +46,22 @@ public class GameController : MonoBehaviour
     private int ComboNum { get; set; }
 
     //制限時間カウントダウン用
-    private float totalTime = 50;
-    private int seconds;
-
+    private float TotalTime { get; set; }
+    private int Seconds { get; set; }
+    
+    //「ん」の例外処理用
+    private bool AcceptSingleN { get; set; }
+    //nでもよい「ん」にて2回目のnを入力したか
+    private bool IsInput2ndN { get; set; }
+    
     // Start is called before the first frame update
     void Start()
     {
-        timeQueue = new Queue<float>();
+        AcceptSingleN = false;
+        IsInput2ndN = false;
+        IsInputValid = false;
+        TotalTime = 60;
+        TimeQueue = new Queue<float>();
         SpellIndex = 0;
         KanaIndex = 0;
         ComboNum = 0;
@@ -66,20 +77,22 @@ public class GameController : MonoBehaviour
         OutputQ();
     }
 
-    void OutputQ()
+    void Update()
     {
-        //問題のセット
-        var ag = new AnswerGenerator(romajiKanaMapPath, dbPath, tableName);
-        ProblemKana.text = ag.QuestionKanaSpelling;
-        ProblemText.text = ag.QuestionText;
-        AnswerList = ag.AnswerRomajiInputSpellingList;
-        CorrectRomaji.text = "";
-        IsInputValid = true;
-        
+        if (Input.GetKey(KeyCode.Escape)) Quit();
+
+        TotalTime -= Time.deltaTime;
+        Seconds = (int)TotalTime;
+        Timer.text = Seconds.ToString();
+        if (Seconds == 0)
+        {
+            SceneManager.LoadScene("Result");
+        }
+
     }
 
+    //入力キューに入れるのは随時入力があったとき、判定はフレームごと
     void OnGUI()
-
     {
         Event e = Event.current;
         //キー入力が有効な状態でキーが押下され（キーが上がった瞬間も除外）、何らかの（既知の）キーコードが認識
@@ -93,17 +106,16 @@ public class GameController : MonoBehaviour
                 FirstCharInputTime = Time.realtimeSinceStartup;
                 IsFirstInput = false;
             }
-            //inputQueue.Enqueue(e.keyCode);
-            Debug.Log(Time.realtimeSinceStartup);
-            timeQueue.Enqueue(Time.realtimeSinceStartup);
             if (inputChar != '\0')
             {
+                Debug.Log("input : " + inputChar);
+
+                TimeQueue.Enqueue(Time.realtimeSinceStartup);
                 Judge(inputChar);
             }
         }
     }
 
-    
     void Judge(char input)
     {
         //正解のローマ字入力候補のいずれかが入力ローマ字と一致する
@@ -116,7 +128,7 @@ public class GameController : MonoBehaviour
             {
                 MaxCombo = ComboNum;
             }
-            //現在の入力に一致しない正解候補リストを排除
+
             AnswerList[KanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
 
             foreach (string charCandidate in AnswerList[KanaIndex])
@@ -125,15 +137,36 @@ public class GameController : MonoBehaviour
                 SpellIndex++;
 
                 //一文字分チェックし終われば次の文字へ
+
                 if (SpellIndex == charCandidate.Length)
                 {
+
+                    //nでもよい「ん」の場合に入力がnで、まだnnと入力されてないとき
+                    if (charCandidate == "n" && input == 'n' && !IsInput2ndN)
+                    {
+                        //nnのための二番目nを受け入れる準備
+                        AcceptSingleN = true;
+                        Debug.Log("nでもよい");
+                    }
+                    //次の仮名部分へ
                     SpellIndex = 0;
                     KanaIndex++;
-                    //出題文の末尾まで回答を終えたら次の問題を出題
+                    if (IsInput2ndN)
+                    {
+                        IsInput2ndN = false;
+                    }
+                    //出題文の末尾まで解答を終えたら次の問題を出題
                     if (KanaIndex == AnswerList.Count)
                     {
                         KanaIndex = 0;
                         OutputQ();
+                    }
+                    else
+                    {
+                        foreach (string item in AnswerList[KanaIndex])
+                        {
+                            Debug.Log("次の候補：" + item);
+                        }
                     }
 
                 }
@@ -142,17 +175,36 @@ public class GameController : MonoBehaviour
         }
         else
         {
+            Debug.Log("ミスタイプ：" + input);
             ComboNum = 0;
             MissNum++;
             StartCoroutine(FlashOnMiss());
             Combo.text = "";
-            Debug.Log("ミスタイプ : " + input);
             
         }
-        
+
         //正解ローマ字入力候補が入力と一致するか
         bool IsMatchWithInputPeek(string s)
         {
+            if (AcceptSingleN)
+            {
+                AcceptSingleN = false;
+
+                //nでもよい「ん」の2回目のnが入力されたとき
+                if (input == 'n')
+                {
+                    Debug.Log("nでもよい時に二回目のnが入力されました");
+                    IsInput2ndN = true;
+                    //次の仮名を見ているインデックスを前の「ん」のnに戻す
+                    KanaIndex--;
+                    SpellIndex = 0;
+                    Debug.Log("AnswerList[KanaIndex] : " + s);
+                    Debug.Log("SpellIndex : " + SpellIndex);
+                    return true;
+                }
+                return input == s[SpellIndex];
+
+            }
             return input == s[SpellIndex];
         }
         //入力と不一致か
@@ -160,6 +212,18 @@ public class GameController : MonoBehaviour
         {
             return !IsMatchWithInputPeek(s);
         }
+    }
+
+    void OutputQ()
+    {
+        //問題のセット
+        var ag = new AnswerGenerator(romajiKanaMapPath, dbPath, tableName);
+        ProblemKana.text = ag.QuestionKanaSpelling;
+        ProblemText.text = ag.QuestionText;
+        AnswerList = ag.AnswerRomajiInputSpellingList;
+        CorrectRomaji.text = "";
+        IsInputValid = true;
+        IsFirstInput = true;
     }
 
 
@@ -172,19 +236,7 @@ public class GameController : MonoBehaviour
 #endif
     }
 
-    void Update()
-    {
-        if (Input.GetKey(KeyCode.Escape)) Quit();
-
-        totalTime -= Time.deltaTime;
-        seconds = (int)totalTime;
-        Timer.text = seconds.ToString();
-        if (seconds == 0)
-        {
-            SceneManager.LoadScene("Result");
-        }
-    }
-
+    
     IEnumerator FlashOnMiss()
     {
         MissEffect.enabled = true;
