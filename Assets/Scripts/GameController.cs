@@ -108,8 +108,7 @@ public class GameController : MonoBehaviour
             }
             if (inputChar != '\0')
             {
-                Debug.Log("input : " + inputChar);
-
+                
                 TimeQueue.Enqueue(Time.realtimeSinceStartup);
                 Judge(inputChar);
             }
@@ -124,6 +123,7 @@ public class GameController : MonoBehaviour
             CorrectNum++;
             ComboNum++;
             Combo.text = ComboNum + " Combo!";
+            if (ComboNum > MaxCombo)
             if (ComboNum > MaxCombo)
             {
                 MaxCombo = ComboNum;
@@ -146,7 +146,7 @@ public class GameController : MonoBehaviour
                     {
                         //nnのための二番目nを受け入れる準備
                         AcceptSingleN = true;
-                        Debug.Log("nでもよい");
+                        
                     }
                     //次の仮名部分へ
                     SpellIndex = 0;
@@ -161,21 +161,12 @@ public class GameController : MonoBehaviour
                         KanaIndex = 0;
                         OutputQ();
                     }
-                    else
-                    {
-                        foreach (string item in AnswerList[KanaIndex])
-                        {
-                            Debug.Log("次の候補：" + item);
-                        }
-                    }
-
                 }
                 break;
             }
         }
         else
         {
-            Debug.Log("ミスタイプ：" + input);
             ComboNum = 0;
             MissNum++;
             StartCoroutine(FlashOnMiss());
@@ -193,13 +184,10 @@ public class GameController : MonoBehaviour
                 //nでもよい「ん」の2回目のnが入力されたとき
                 if (input == 'n')
                 {
-                    Debug.Log("nでもよい時に二回目のnが入力されました");
                     IsInput2ndN = true;
                     //次の仮名を見ているインデックスを前の「ん」のnに戻す
                     KanaIndex--;
                     SpellIndex = 0;
-                    Debug.Log("AnswerList[KanaIndex] : " + s);
-                    Debug.Log("SpellIndex : " + SpellIndex);
                     return true;
                 }
                 return input == s[SpellIndex];

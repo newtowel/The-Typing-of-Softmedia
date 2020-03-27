@@ -82,6 +82,7 @@ class AnswerGenerator
                 {
                     int idx = UnityEngine.Random.Range(0, UnusedIndices.Count);
                     int row = UnusedIndices[idx];
+                    Debug.Log("あと"+UnusedIndices.Count+"問");
                     UnusedIndices.RemoveAt(idx);
                     command.CommandText = "select text,kana from " + tableName + " limit 1 offset " + (row - 1).ToString();
                     using (SQLiteDataReader returnedSdr = command.ExecuteReader())
