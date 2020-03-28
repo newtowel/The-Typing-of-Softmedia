@@ -446,7 +446,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "\u3010Press the Space Key\u3011"
+  m_Text: "\u3010Press the Space key\u3011"
 --- !u!222 &1940009760
 CanvasRenderer:
   m_ObjectHideFlags: 0

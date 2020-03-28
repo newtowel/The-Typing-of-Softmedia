@@ -189,7 +189,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u6700\u5927\u9023\u7D9A\u6B63\u89E3\u5165\u529B\u6570\uFF1A"
+  m_Text: "\u6700\u5927\u30B3\u30F3\u30DC\uFF1A"
 --- !u!222 &213909831
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -717,7 +717,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u3010Press Enter to Return to Title\u3011"
+  m_Text: "\u3010Press the Enter key to return to title\u3011"
 --- !u!222 &1080452303
 CanvasRenderer:
   m_ObjectHideFlags: 0

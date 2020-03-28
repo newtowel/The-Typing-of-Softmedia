@@ -85,11 +85,32 @@ public class GameController : MonoBehaviour
 
     }
 
+    void OutputQ()
+    {
+        //問題のセット
+        var ag = new AnswerGenerator(romajiKanaMapPath, dbPath, tableName);
+        ProblemKana.text = ag.QuestionKanaSpelling;
+        ProblemText.text = ag.QuestionText;
+        AnswerList = ag.AnswerRomajiInputSpellingList;
+        CorrectRomaji.text = "";
+        /*
+        foreach (List<string> kana in AnswerList)
+        {
+            foreach (string spell in kana)
+            {
+                CorrectRomaji.text += spell;
+            }
+        }
+        */
+        IsInputValid = true;
+        IsFirstInput = true;
+    }
+
     //入力キューに入れるのは随時入力があったとき、判定はフレームごと
     void OnGUI()
     {
         Event e = Event.current;
-        //キー入力が有効な状態でキーが押下され（キーが上がった瞬間も除外）、何らかの（既知の）キーコードが認識
+        
         if (IsInputValid && e.type == EventType.KeyDown && e.type != EventType.KeyUp && !Input.GetMouseButton(0) && !Input.GetMouseButton(1) && !Input.GetMouseButton(2))
         {
             char inputChar = e.character;
@@ -125,13 +146,26 @@ public class GameController : MonoBehaviour
 
             AnswerList[KanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
 
+            
             foreach (string charCandidate in AnswerList[KanaIndex])
             {
-                CorrectRomaji.text += input;
                 SpellIndex++;
-
+                CorrectRomaji.text += input;
+                /*
+                CorrectRomaji.text = "";
+                for (int i = KanaIndex; i < AnswerList.Count; i++)
+                {
+                    for (int j = 0; j < AnswerList[KanaIndex].Count; j++)
+                    {
+                        if (i == KanaIndex && j < SpellIndex)
+                        {
+                            continue;
+                        }
+                        CorrectRomaji.text += AnswerList[i][j];
+                    }
+                }
+                */
                 //一文字分チェックし終われば次の文字へ
-
                 if (SpellIndex == charCandidate.Length)
                 {
 
@@ -195,19 +229,6 @@ public class GameController : MonoBehaviour
             return !IsMatchWithInputPeek(s);
         }
     }
-
-    void OutputQ()
-    {
-        //問題のセット
-        var ag = new AnswerGenerator(romajiKanaMapPath, dbPath, tableName);
-        ProblemKana.text = ag.QuestionKanaSpelling;
-        ProblemText.text = ag.QuestionText;
-        AnswerList = ag.AnswerRomajiInputSpellingList;
-        CorrectRomaji.text = "";
-        IsInputValid = true;
-        IsFirstInput = true;
-    }
-
 
     void Quit()
     {
