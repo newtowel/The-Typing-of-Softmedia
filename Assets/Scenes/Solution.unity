@@ -628,9 +628,9 @@ MonoBehaviour:
   ProblemKana: {fileID: 904740316}
   ProblemText: {fileID: 2062635284}
   CorrectRomaji: {fileID: 39986942}
-  Combo: {fileID: 0}
-  MissEffect: {fileID: 0}
-  Timer: {fileID: 0}
+  Combo: {fileID: 1516674613}
+  MissEffect: {fileID: 7593534}
+  Timer: {fileID: 125358718}
 --- !u!1 &1351389695
 GameObject:
   m_ObjectHideFlags: 0

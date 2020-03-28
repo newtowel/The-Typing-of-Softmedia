@@ -6,8 +6,6 @@ ScriptsOnlyBuild:
     - ScoreManager
     Unity.2D.Tilemap.Editor.dll:
     - UnityEditor.Tilemaps.GridPaintingState
-    - UnityEditor.Tilemaps.GridPaletteBrushes
-    - UnityEditor.Tilemaps.GridPalettes
     - UnityEditor.Tilemaps.SceneViewGridManager
     - UnityEditor.Tilemaps.TileDragAndDropManager
     Unity.Rider.Editor.dll:
@@ -23,8 +21,6 @@ ScriptsOnlyBuild:
     - UnityEngine.UI.GraphicRaycaster
     - UnityEngine.UI.Image
     - UnityEngine.UI.Text
-    com.unity.multiplayer-hlapi.Runtime.dll:
-    - UnityEngine.Networking.NetworkCallbacks
   sceneClasses:
     Assets/Scenes/Result.unity:
     - Class: 1
@@ -44,17 +40,17 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 11216}
+      Script: {instanceID: 11214}
     - Class: 114
-      Script: {instanceID: 11430}
+      Script: {instanceID: 11428}
     - Class: 114
-      Script: {instanceID: 11992}
+      Script: {instanceID: 11990}
     - Class: 114
-      Script: {instanceID: 12028}
+      Script: {instanceID: 12026}
     - Class: 114
-      Script: {instanceID: 13112}
+      Script: {instanceID: 13110}
     - Class: 114
-      Script: {instanceID: 13582}
+      Script: {instanceID: 13580}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -87,19 +83,19 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 11216}
+      Script: {instanceID: 11214}
     - Class: 114
-      Script: {instanceID: 11430}
+      Script: {instanceID: 11428}
     - Class: 114
-      Script: {instanceID: 11478}
+      Script: {instanceID: 11476}
     - Class: 114
-      Script: {instanceID: 11992}
+      Script: {instanceID: 11990}
     - Class: 114
-      Script: {instanceID: 12436}
+      Script: {instanceID: 12434}
     - Class: 114
-      Script: {instanceID: 13112}
+      Script: {instanceID: 13110}
     - Class: 114
-      Script: {instanceID: 13582}
+      Script: {instanceID: 13580}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -134,17 +130,17 @@ ScriptsOnlyBuild:
     - Class: 104
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 11212}
+      Script: {instanceID: 11210}
     - Class: 114
-      Script: {instanceID: 11216}
+      Script: {instanceID: 11214}
     - Class: 114
-      Script: {instanceID: 11430}
+      Script: {instanceID: 11428}
     - Class: 114
-      Script: {instanceID: 11992}
+      Script: {instanceID: 11990}
     - Class: 114
-      Script: {instanceID: 13112}
+      Script: {instanceID: 13110}
     - Class: 114
-      Script: {instanceID: 13582}
+      Script: {instanceID: 13580}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -278,6 +274,18 @@ ScriptsOnlyBuild:
     className: NetworkTransform
   - hash:
       serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: UnityEngine.Advertisements.dll
+    namespaceName: UnityEngine.Advertisements
+    className: CallbackExecutor
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: UnityEngine.Advertisements.dll
+    namespaceName: UnityEngine.Advertisements.Editor
+    className: Placeholder
+  - hash:
+      serializedVersion: 2
       Hash: 7ab0e790220bdca831fdd886b339039d
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -392,7 +400,7 @@ ScriptsOnlyBuild:
     className: ControlPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: 11403d684431fc97c1a0fb267e15b373
+      Hash: 9d56faa090d6b31423ac07e2b50cb3dc
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: ScoreManager

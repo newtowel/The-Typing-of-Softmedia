@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class ScoreManager : MonoBehaviour
 {
@@ -20,16 +21,21 @@ public class ScoreManager : MonoBehaviour
     Text MIPS;
     [SerializeField]
     Text Combo;
+    //タイトルに戻す案内
+    [SerializeField]
+    Text ReturnGuide;
+
+    private float TotalTime = 4;
+    private int Seconds { get; set; }
+    private bool IsSpacePressed = false;
+    //文字を点滅させる周期
+    private readonly float Interval = 0.5f;
+    private float NextTime { get; set; }
 
     // Start is called before the first frame update
     void Start()
     {
-        Correct = transform.Find("Correct").GetComponent<Text>();
-        Wrong = transform.Find("Wrong").GetComponent<Text>();
-        Accuracy = transform.Find("Accuracy").GetComponent<Text>();
-        MIPS = transform.Find("MIPS").GetComponent<Text>();
-        Combo = transform.Find("Combo").GetComponent<Text>();
-        
+        NextTime = Time.time;
         int correct = GameController.CorrectNum;
         int miss = GameController.MissNum;
         Correct.text += correct + "回";
@@ -61,6 +67,25 @@ public class ScoreManager : MonoBehaviour
 
     void Update()
     {
+        if (Time.time > NextTime)
+        {
+            float alpha = ReturnGuide.GetComponent<CanvasRenderer>().GetAlpha();
+            if (alpha == 1)
+            {
+                ReturnGuide.GetComponent<CanvasRenderer>().SetAlpha(0);
+            }
+            else
+            {
+                ReturnGuide.GetComponent<CanvasRenderer>().SetAlpha(1);
+            }
+            NextTime += Interval;
+        }
+        if (Input.GetKey(KeyCode.Return))
+        {
+            ReturnGuide.GetComponent<CanvasRenderer>().SetAlpha(1);
+            SceneManager.LoadScene("Title");
+        }
+
         if (Input.GetKey(KeyCode.Escape)) Quit();
     }
 

@@ -17,7 +17,6 @@ public class SceneTransition : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        StartText = transform.Find("StartGuidance").GetComponent<Text>();
         NextTime = Time.time;
     }
 

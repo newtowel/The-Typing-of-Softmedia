@@ -68,12 +68,6 @@ public class GameController : MonoBehaviour
         MaxCombo = 0;
         CorrectNum = 0;
         MissNum = 0;
-        ProblemText = transform.Find("ProblemText").GetComponent<Text>();
-        ProblemKana = transform.Find("ProblemKana").GetComponent<Text>();
-        CorrectRomaji = transform.Find("CorrectRomaji").GetComponent<Text>();
-        Combo = transform.Find("Combo").GetComponent<Text>();
-        MissEffect = transform.Find("MissEffect").GetComponent<Image>();
-        Timer = transform.Find("Timer").GetComponent<Text>();
         OutputQ();
     }
 
