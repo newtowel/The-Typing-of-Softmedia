@@ -717,7 +717,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u3010Press the Enter key to return to title\u3011"
+  m_Text: "\u3010Enter\u3092\u62BC\u3059\u3068\u30BF\u30A4\u30C8\u30EB\u753B\u9762\u306B\u623B\u308A\u307E\u3059\u3011"
 --- !u!222 &1080452303
 CanvasRenderer:
   m_ObjectHideFlags: 0

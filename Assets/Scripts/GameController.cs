@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.SceneManagement;
+using System;
+
 public class GameController : MonoBehaviour
 {
     [SerializeField]
@@ -35,13 +37,13 @@ public class GameController : MonoBehaviour
     //変換辞書をもとに生成された入力候補リスト
     private List<List<string>> AnswerList { get; set; }
     //半角スペルの位置
-    private int SpellIndex { get; set; }
+    private int SpellingIndex { get; set; }
     //何文字目のかなについて打っているか
     private int KanaIndex { get; set; }
     //上の文字が追加された時刻（平均秒速打数算出用？）
     private readonly string romajiKanaMapPath = Application.streamingAssetsPath + "/roman_map.json";
     //データベース名・テーブル名。問題取得時に用いる。暫定版
-    private readonly string tableName = "another_list";
+    private readonly string tableName = "trend_words";
     private readonly string dbPath = Application.streamingAssetsPath + "/jp_sentence.db";
     private int ComboNum { get; set; }
 
@@ -60,9 +62,9 @@ public class GameController : MonoBehaviour
         AcceptSingleN = false;
         IsInput2ndN = false;
         IsInputValid = false;
-        TotalTime = 60;
+        TotalTime = 120;
         TimeQueue = new Queue<float>();
-        SpellIndex = 0;
+        SpellingIndex = 0;
         KanaIndex = 0;
         ComboNum = 0;
         MaxCombo = 0;
@@ -73,6 +75,7 @@ public class GameController : MonoBehaviour
 
     void Update()
     {
+        
         if (Input.GetKey(KeyCode.Escape)) Quit();
 
         TotalTime -= Time.deltaTime;
@@ -93,20 +96,15 @@ public class GameController : MonoBehaviour
         ProblemText.text = ag.QuestionText;
         AnswerList = ag.AnswerRomajiInputSpellingList;
         CorrectRomaji.text = "";
-        /*
-        foreach (List<string> kana in AnswerList)
+
+        foreach (List<string> item in AnswerList)
         {
-            foreach (string spell in kana)
-            {
-                CorrectRomaji.text += spell;
-            }
+            CorrectRomaji.text += item[0];
         }
-        */
         IsInputValid = true;
         IsFirstInput = true;
     }
 
-    //入力キューに入れるのは随時入力があったとき、判定はフレームごと
     void OnGUI()
     {
         Event e = Event.current;
@@ -139,34 +137,21 @@ public class GameController : MonoBehaviour
             ComboNum++;
             Combo.text = ComboNum + " Combo!";
             if (ComboNum > MaxCombo)
-            if (ComboNum > MaxCombo)
             {
                 MaxCombo = ComboNum;
             }
 
             AnswerList[KanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
 
-            
+            ThickenCorrectSpellings();
+            //EraseCorrectSpellings();
+
             foreach (string charCandidate in AnswerList[KanaIndex])
             {
-                SpellIndex++;
-                CorrectRomaji.text += input;
-                /*
-                CorrectRomaji.text = "";
-                for (int i = KanaIndex; i < AnswerList.Count; i++)
-                {
-                    for (int j = 0; j < AnswerList[KanaIndex].Count; j++)
-                    {
-                        if (i == KanaIndex && j < SpellIndex)
-                        {
-                            continue;
-                        }
-                        CorrectRomaji.text += AnswerList[i][j];
-                    }
-                }
-                */
+                SpellingIndex++;
+                
                 //一文字分チェックし終われば次の文字へ
-                if (SpellIndex == charCandidate.Length)
+                if (SpellingIndex == charCandidate.Length)
                 {
 
                     //nでもよい「ん」の場合に入力がnで、まだnnと入力されてないとき
@@ -177,7 +162,7 @@ public class GameController : MonoBehaviour
                         
                     }
                     //次の仮名部分へ
-                    SpellIndex = 0;
+                    SpellingIndex = 0;
                     KanaIndex++;
                     if (IsInput2ndN)
                     {
@@ -215,13 +200,13 @@ public class GameController : MonoBehaviour
                     IsInput2ndN = true;
                     //次の仮名を見ているインデックスを前の「ん」のnに戻す
                     KanaIndex--;
-                    SpellIndex = 0;
+                    SpellingIndex = 0;
                     return true;
                 }
-                return input == s[SpellIndex];
+                return input == s[SpellingIndex];
 
             }
-            return input == s[SpellIndex];
+            return input == s[SpellingIndex];
         }
         //入力と不一致か
         bool IsNOTMatchWithInputPeek(string s)
@@ -230,6 +215,44 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void ThickenCorrectSpellings(){
+        //入力補助スペル更新
+
+        CorrectRomaji.text = "";
+        for (int i = 0; i < AnswerList.Count; i++)
+        {
+            for (int j = 0; j < AnswerList[i][0].Length; j++)
+            {
+                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
+                {
+                    CorrectRomaji.text += "<b>";
+                }
+                CorrectRomaji.text += AnswerList[i][0][j];
+                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
+                {
+                    CorrectRomaji.text += "</b>";
+                }
+            }
+        }
+
+    }
+
+    private void EraseCorrectSpellings()
+    {
+        CorrectRomaji.text = "";
+        for (int i = 0; i < AnswerList.Count; i++)
+        {
+            for (int j = 0; j < AnswerList[i][0].Length; j++)
+            {
+                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
+                {
+                    continue;
+                }
+                CorrectRomaji.text += AnswerList[i][0][j];
+                
+            }
+        }
+    }
     void Quit()
     {
 #if UNITY_EDITOR
