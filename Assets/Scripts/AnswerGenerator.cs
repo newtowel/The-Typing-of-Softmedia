@@ -73,7 +73,7 @@ class AnswerGenerator
                 }
 
                 //解法を開始する前に、未出の問題インデックスリストを生成
-                if (!GameController.IsInputValid)
+                if (!TypingSystem.IsInputValid)
                 {
                     UnusedIndices = Enumerable.Range(1, DataNum).ToList();
                 }
@@ -82,7 +82,7 @@ class AnswerGenerator
                 {
                     int idx = UnityEngine.Random.Range(0, UnusedIndices.Count);
                     int row = UnusedIndices[idx];
-                    Debug.Log("あと"+UnusedIndices.Count+"問");
+                    //Debug.Log("あと"+UnusedIndices.Count+"問");
                     UnusedIndices.RemoveAt(idx);
                     command.CommandText = "select text,kana from " + tableName + " limit 1 offset " + (row - 1).ToString();
                     using (SQLiteDataReader returnedSdr = command.ExecuteReader())

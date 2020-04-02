@@ -18,16 +18,19 @@ public class ScoreManager : MonoBehaviour
     Text Accuracy;
     //平均秒速キータイプ数
     [SerializeField]
-    Text MIPS;
+    Text MKPS;
     [SerializeField]
     Text Combo;
+    //平均初速
+    [SerializeField]
+    Text InitialSpeed;
     //タイトルに戻す案内
     [SerializeField]
     Text ReturnGuide;
+    //苦手キー
+    [SerializeField]
+    Text WeakKeys;
 
-    private float TotalTime = 4;
-    private int Seconds { get; set; }
-    private bool IsSpacePressed = false;
     //文字を点滅させる周期
     private readonly float Interval = 0.5f;
     private float NextTime { get; set; }
@@ -36,25 +39,68 @@ public class ScoreManager : MonoBehaviour
     void Start()
     {
         NextTime = Time.time;
-        int correct = GameController.CorrectNum;
-        int miss = GameController.MissNum;
-        Correct.text += correct + "回";
-        Wrong.text += miss + "回";
-        Combo.text += GameController.MaxCombo + "回";
-        
-        float acc = (float)correct / (correct + miss);
-        Accuracy.text += Math.Round(acc, 2, MidpointRounding.AwayFromZero);
-
+        int correct = TypingSystem.CorrectNum;
+        int miss = TypingSystem.MissNum;
+        float acc, mips;
         //キー入力時刻キューを読み込み
-        List<float> inputTimes = GameController.TimeQueue.ToList<float>();
+        List<float> inputTimes = TypingSystem.TimeQueue.ToList<float>();
         //隣り合った入力時刻の差分をとることで得られる、1文字当たりの入力時間リスト
         List<float> deltas = new List<float>();
+        List<float> firstInputTimes = TypingSystem.FirstCharInputTime;
+        List<float> problemShownTimes = TypingSystem.ProblemShownTime;
+        List<float> initialTimes = new List<float>();
+        List<char> weakKeys = TypingSystem.WeakKeys;
+        Dictionary<char, int> weakKeyRank = new Dictionary<char, int>();
+
+        Correct.text += correct + "回";
+        Wrong.text += miss + "回";
+        Combo.text += TypingSystem.MaxCombo + "回";
+        
+        acc = (float)correct / (correct + miss);
+        Accuracy.text += Math.Round(acc, 3, MidpointRounding.AwayFromZero) * 100.0 + "％";
+
+
         for (int i = 0; i < inputTimes.Count - 1; i++)
         {
             deltas.Add(inputTimes[i + 1] - inputTimes[i]);
         }
-        float mips = 1f / deltas.Average();
-        MIPS.text += Math.Round(mips, 2, MidpointRounding.AwayFromZero) + "回/秒";
+        mips = 1f / deltas.Average();
+        MKPS.text += Math.Round(mips, 2, MidpointRounding.AwayFromZero) + "回/秒";
+
+        try
+        {
+            for (int i = 0; i < firstInputTimes.Count; i++)
+            {
+                initialTimes.Add(firstInputTimes[i] - problemShownTimes[i]);
+            }
+        }
+        catch (Exception)
+        {
+            Debug.LogError(problemShownTimes.Count);
+            Debug.LogError(firstInputTimes.Count);
+            
+        }
+        InitialSpeed.text += Math.Round(initialTimes.Average(), 2, MidpointRounding.AwayFromZero ) + "秒";
+
+        foreach (char key in weakKeys)
+        {
+            //以前に間違えたことがある（すでに検知されている）キーならその回数を増加
+            if (weakKeyRank.ContainsKey(key))
+            {
+                weakKeyRank[key]++;
+            }
+            else
+            {
+                //そのキーが初めて検知されたとき、辞書に1回として追加
+                weakKeyRank.Add(key, 1);
+            }
+        }
+        //ミス回数が3回以上の物をミスタイプ回数が多い順に5種類のキーを抽出
+        var sortedRank = weakKeyRank.OrderByDescending(x => x.Value).Where(x => x.Value >= 3).Take(5);
+        foreach (var item in sortedRank)
+        {
+            WeakKeys.text += item.Key + "(" + item.Value + ") ";
+        }
     }
     void Quit()
     {

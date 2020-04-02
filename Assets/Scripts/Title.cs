@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 
-public class SceneTransition : MonoBehaviour
+public class Title : MonoBehaviour
 {
     [SerializeField]
     Text StartText;

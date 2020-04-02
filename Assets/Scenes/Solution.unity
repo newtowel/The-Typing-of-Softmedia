@@ -339,7 +339,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 60
+  m_Text: "\u5236\u9650\u6642\u9593"
 --- !u!222 &125358719
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -809,7 +809,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 100}
-  m_SizeDelta: {x: 10000, y: 60}
+  m_SizeDelta: {x: 700, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2062635284
 MonoBehaviour:
@@ -839,10 +839,10 @@ MonoBehaviour:
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
-    m_HorizontalOverflow: 1
+    m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: "\u554F\u984C"
+  m_Text: "\u4E57\u308B\u3057\u304B\u306A\u3044\u3067\u3059\u3082\u3093\u306D\u3001\u3053\u306E\u30D3\u30C3\u30B0\u30A6\u30A7\u30FC\u30D6\u306B"
 --- !u!222 &2062635285
 CanvasRenderer:
   m_ObjectHideFlags: 0

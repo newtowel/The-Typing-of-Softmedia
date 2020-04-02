@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine.SceneManagement;
 using System;
 
-public class GameController : MonoBehaviour
+public class TypingSystem : MonoBehaviour
 {
     [SerializeField]
     Text ProblemKana;
@@ -29,47 +29,47 @@ public class GameController : MonoBehaviour
     public static Queue<float> TimeQueue { get; private set; }
     //入力を受け付けてよいか
     public static bool IsInputValid { get; private set; }
-
-    //文字を入力し始めてからの経過時間
-    private float FirstCharInputTime { get; set; }
-    //その文字が最初の人文字目であるかのチェック
-    private bool IsFirstInput { get; set; }
+    //新しい問題が表示された時刻
+    public static List<float> ProblemShownTime { get; private set; }
+    //その問題の1文字目を入力した時刻
+    public static List<float> FirstCharInputTime { get; private set; }
+    //苦手キー
+    public static List<char> WeakKeys { get; private set; }
+    //その文字が問題の１文字目であるかのチェック
+    private bool IsFirstInput { get; set; } = true;
     //変換辞書をもとに生成された入力候補リスト
     private List<List<string>> AnswerList { get; set; }
     //半角スペルの位置
-    private int SpellingIndex { get; set; }
+    private int SpellingIndex { get; set; } = 0;
     //何文字目のかなについて打っているか
-    private int KanaIndex { get; set; }
+    private int KanaIndex { get; set; } = 0;
     //上の文字が追加された時刻（平均秒速打数算出用？）
-    private readonly string romajiKanaMapPath = Application.streamingAssetsPath + "/roman_map.json";
+    private string RomajiKanaMapPath { get; } = Application.streamingAssetsPath + "/roman_map.json";
     //データベース名・テーブル名。問題取得時に用いる。暫定版
-    private readonly string tableName = "trend_words";
-    private readonly string dbPath = Application.streamingAssetsPath + "/jp_sentence.db";
-    private int ComboNum { get; set; }
+    private string TableName { get; } = "another_list";
+    private string DbPath { get; } = Application.streamingAssetsPath + "/jp_sentence.db";
+    private int ComboNum { get; set; } = 0;
 
     //制限時間カウントダウン用
-    private float TotalTime { get; set; }
+    private float TotalTime { get; set; } = 60;
     private int Seconds { get; set; }
-    
+
     //「ん」の例外処理用
-    private bool AcceptSingleN { get; set; }
+    private bool AcceptSingleN { get; set; } = false;
     //nでもよい「ん」にて2回目のnを入力したか
-    private bool IsInput2ndN { get; set; }
+    private bool IsInput2ndN { get; set; } = false;
     
     // Start is called before the first frame update
     void Start()
     {
-        AcceptSingleN = false;
-        IsInput2ndN = false;
-        IsInputValid = false;
-        TotalTime = 120;
-        TimeQueue = new Queue<float>();
-        SpellingIndex = 0;
-        KanaIndex = 0;
-        ComboNum = 0;
         MaxCombo = 0;
         CorrectNum = 0;
         MissNum = 0;
+        TimeQueue = new Queue<float>();
+        IsInputValid = false;
+        ProblemShownTime = new List<float>();
+        FirstCharInputTime = new List<float>();
+        WeakKeys = new List<char>();
         OutputQ();
     }
 
@@ -83,6 +83,7 @@ public class GameController : MonoBehaviour
         Timer.text = Seconds.ToString();
         if (Seconds == 0)
         {
+            IsInputValid = false;
             SceneManager.LoadScene("Result");
         }
 
@@ -91,18 +92,19 @@ public class GameController : MonoBehaviour
     void OutputQ()
     {
         //問題のセット
-        var ag = new AnswerGenerator(romajiKanaMapPath, dbPath, tableName);
+        var ag = new AnswerGenerator(RomajiKanaMapPath, DbPath, TableName);
         ProblemKana.text = ag.QuestionKanaSpelling;
         ProblemText.text = ag.QuestionText;
         AnswerList = ag.AnswerRomajiInputSpellingList;
         CorrectRomaji.text = "";
-
+        //入力補助用アルファベット表示
         foreach (List<string> item in AnswerList)
         {
             CorrectRomaji.text += item[0];
         }
         IsInputValid = true;
         IsFirstInput = true;
+        ProblemShownTime.Add(Time.realtimeSinceStartup);
     }
 
     void OnGUI()
@@ -113,10 +115,9 @@ public class GameController : MonoBehaviour
         {
             char inputChar = e.character;
 
-            //新しい問題文が表示されてから1文字目を打つまでのレイテンシは計測時間に含めない
             if (IsFirstInput)
             {
-                FirstCharInputTime = Time.realtimeSinceStartup;
+                FirstCharInputTime.Add(Time.realtimeSinceStartup);
                 IsFirstInput = false;
             }
             if (inputChar != '\0')
@@ -133,6 +134,7 @@ public class GameController : MonoBehaviour
         //正解のローマ字入力候補のいずれかが入力ローマ字と一致する
         if (AnswerList[KanaIndex].Count(IsMatchWithInputPeek) != 0)
         {
+
             CorrectNum++;
             ComboNum++;
             Combo.text = ComboNum + " Combo!";
@@ -141,16 +143,20 @@ public class GameController : MonoBehaviour
                 MaxCombo = ComboNum;
             }
 
+            
+            //入力に一致しない候補を削除
             AnswerList[KanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
 
-            ThickenCorrectSpellings();
-            //EraseCorrectSpellings();
+            //入力補助用アルファベット更新
+            //ThickenCorrectSpellings();
+            EraseCorrectSpellings();
+            //ColorCorrectSpellingsRed();
 
             foreach (string charCandidate in AnswerList[KanaIndex])
             {
                 SpellingIndex++;
                 
-                //一文字分チェックし終われば次の文字へ
+                //かな一文字分チェックし終われば次の文字へ
                 if (SpellingIndex == charCandidate.Length)
                 {
 
@@ -172,6 +178,7 @@ public class GameController : MonoBehaviour
                     if (KanaIndex == AnswerList.Count)
                     {
                         KanaIndex = 0;
+                        IsFirstInput = true;
                         OutputQ();
                     }
                 }
@@ -180,6 +187,8 @@ public class GameController : MonoBehaviour
         }
         else
         {
+            Debug.Log("ミスタイプ。正解は" + AnswerList[KanaIndex][0][SpellingIndex]);
+            WeakKeys.Add(AnswerList[KanaIndex][0][SpellingIndex]);
             ComboNum = 0;
             MissNum++;
             StartCoroutine(FlashOnMiss());
@@ -215,6 +224,7 @@ public class GameController : MonoBehaviour
         }
     }
 
+    //入力補助用アルファベット表示：正解した部分を太字にしていく
     private void ThickenCorrectSpellings(){
         //入力補助スペル更新
 
@@ -237,6 +247,7 @@ public class GameController : MonoBehaviour
 
     }
 
+    //入力補助用アルファベット表示：正解した部分を消していく
     private void EraseCorrectSpellings()
     {
         CorrectRomaji.text = "";
@@ -253,6 +264,25 @@ public class GameController : MonoBehaviour
             }
         }
     }
+    private void ColorCorrectSpellingsRed()
+    {
+        CorrectRomaji.text = "";
+        for (int i = 0; i < AnswerList.Count; i++)
+        {
+            for (int j = 0; j < AnswerList[i][0].Length; j++)
+            {
+                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
+                {
+                    CorrectRomaji.text += "<color=#ff0000>";
+                }
+                CorrectRomaji.text += AnswerList[i][0][j];
+                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
+                {
+                    CorrectRomaji.text += "</color>";
+                }
+            }
+        }
+    }
     void Quit()
     {
 #if UNITY_EDITOR
@@ -262,7 +292,7 @@ public class GameController : MonoBehaviour
 #endif
     }
 
-    
+    //0.2秒画面を赤くする
     IEnumerator FlashOnMiss()
     {
         MissEffect.enabled = true;
