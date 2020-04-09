@@ -67,18 +67,9 @@ public class ScoreManager : MonoBehaviour
         mips = 1f / deltas.Average();
         MKPS.text += Math.Round(mips, 2, MidpointRounding.AwayFromZero) + "回/秒";
 
-        try
+        for (int i = 0; i < firstInputTimes.Count; i++)
         {
-            for (int i = 0; i < firstInputTimes.Count; i++)
-            {
-                initialTimes.Add(firstInputTimes[i] - problemShownTimes[i]);
-            }
-        }
-        catch (Exception)
-        {
-            Debug.LogError(problemShownTimes.Count);
-            Debug.LogError(firstInputTimes.Count);
-            
+            initialTimes.Add(firstInputTimes[i] - problemShownTimes[i]);
         }
         InitialSpeed.text += Math.Round(initialTimes.Average(), 2, MidpointRounding.AwayFromZero ) + "秒";
 

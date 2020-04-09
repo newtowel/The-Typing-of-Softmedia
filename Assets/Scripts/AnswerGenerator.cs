@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System;
 
-class AnswerGenerator
+public class AnswerGenerator
 {
     
     //正解入力候補リスト
@@ -24,7 +24,7 @@ class AnswerGenerator
     //重複した出題を防ぐための、未出問題のデータベース上のインデックスリスト
     private static List<int> UnusedIndices { get; set; }
     //仮名から入力候補ローマ字生成時に用いる、「ん」の「n」を認めない場合に出てくる次の文字
-    private readonly string[] NUnusable = new string[]{ "あ", "い", "う", "え", "お", "な", "に", "ぬ", "ね", "の", "や", "ゆ", "よ", "！", "？", "、", "。", "ー", "＝", "・", "～", "＆" };
+    private string[] NUnusable { get; } = new string[] { "あ", "い", "う", "え", "お", "な", "に", "ぬ", "ね", "の", "や", "ゆ", "よ", "！", "？", "、", "。", "ー", "＝", "・", "～", "＆" };
     
     public AnswerGenerator(string jsonFilePath, string dbPath, string tableName)
     {

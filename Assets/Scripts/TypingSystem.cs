@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.SceneManagement;
-using System;
 
 public class TypingSystem : MonoBehaviour
 {
