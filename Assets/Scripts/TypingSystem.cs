@@ -18,7 +18,7 @@ public class TypingSystem : MonoBehaviour
     Text Combo;
     //ミスタイプ時エフェクト
     [SerializeField]
-    Image MissEffect;
+    Image MistakeEffect;
     [SerializeField]
     Text Timer;
 
@@ -45,13 +45,13 @@ public class TypingSystem : MonoBehaviour
     //上の文字が追加された時刻（平均秒速打数算出用？）
     private string RomajiKanaMapPath { get; } = Application.streamingAssetsPath + "/roman_map.json";
     //データベース名・テーブル名。問題取得時に用いる。暫定版
-    private string TableName { get; } = "another_list";
+    private string TableName { get; } = "trend_words";
     private string DbPath { get; } = Application.streamingAssetsPath + "/jp_sentence.db";
     private int ComboNum { get; set; } = 0;
 
     //制限時間カウントダウン用
-    private float TotalTime { get; set; } = 60;
-    private int Seconds { get; set; }
+    private float TotalTime = 60;
+    private int Seconds;
 
     //「ん」の例外処理用
     private bool AcceptSingleN { get; set; } = false;
@@ -74,21 +74,11 @@ public class TypingSystem : MonoBehaviour
 
     void Update()
     {
-        
-        if (Input.GetKey(KeyCode.Escape)) Quit();
-
-        TotalTime -= Time.deltaTime;
-        Seconds = (int)TotalTime;
-        Timer.text = Seconds.ToString();
-        if (Seconds == 0)
-        {
-            IsInputValid = false;
-            SceneManager.LoadScene("Result");
-        }
-
+        TToSUtils.QuitOnEsc();
+        TToSUtils.CountDownToSceneTransition(Timer,ref Seconds, ref TotalTime, "Result");
     }
 
-    void OutputQ()
+    private void OutputQ()
     {
         //問題のセット
         var ag = new AnswerGenerator(RomajiKanaMapPath, DbPath, TableName);
@@ -128,7 +118,7 @@ public class TypingSystem : MonoBehaviour
         }
     }
 
-    void Judge(char input)
+    private void Judge(char input)
     {
         //正解のローマ字入力候補のいずれかが入力ローマ字と一致する
         if (AnswerList[KanaIndex].Count(IsMatchWithInputPeek) != 0)
@@ -141,16 +131,13 @@ public class TypingSystem : MonoBehaviour
             {
                 MaxCombo = ComboNum;
             }
-
             
             //入力に一致しない候補を削除
             AnswerList[KanaIndex].RemoveAll(IsNOTMatchWithInputPeek);
 
             //入力補助用アルファベット更新
-            //ThickenCorrectSpellings();
             EraseCorrectSpellings();
-            //ColorCorrectSpellingsRed();
-
+       
             foreach (string charCandidate in AnswerList[KanaIndex])
             {
                 SpellingIndex++;
@@ -190,7 +177,7 @@ public class TypingSystem : MonoBehaviour
             WeakKeys.Add(AnswerList[KanaIndex][0][SpellingIndex]);
             ComboNum = 0;
             MissNum++;
-            StartCoroutine(FlashOnMiss());
+            StartCoroutine(FlashOnMistake());
             Combo.text = "";
             
         }
@@ -223,29 +210,6 @@ public class TypingSystem : MonoBehaviour
         }
     }
 
-    //入力補助用アルファベット表示：正解した部分を太字にしていく
-    private void ThickenCorrectSpellings(){
-        //入力補助スペル更新
-
-        CorrectRomaji.text = "";
-        for (int i = 0; i < AnswerList.Count; i++)
-        {
-            for (int j = 0; j < AnswerList[i][0].Length; j++)
-            {
-                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
-                {
-                    CorrectRomaji.text += "<b>";
-                }
-                CorrectRomaji.text += AnswerList[i][0][j];
-                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
-                {
-                    CorrectRomaji.text += "</b>";
-                }
-            }
-        }
-
-    }
-
     //入力補助用アルファベット表示：正解した部分を消していく
     private void EraseCorrectSpellings()
     {
@@ -263,39 +227,12 @@ public class TypingSystem : MonoBehaviour
             }
         }
     }
-    private void ColorCorrectSpellingsRed()
-    {
-        CorrectRomaji.text = "";
-        for (int i = 0; i < AnswerList.Count; i++)
-        {
-            for (int j = 0; j < AnswerList[i][0].Length; j++)
-            {
-                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
-                {
-                    CorrectRomaji.text += "<color=#ff0000>";
-                }
-                CorrectRomaji.text += AnswerList[i][0][j];
-                if (i < KanaIndex || (i == KanaIndex && j <= SpellingIndex))
-                {
-                    CorrectRomaji.text += "</color>";
-                }
-            }
-        }
-    }
-    void Quit()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#elif UNITY_STANDALONE
-      UnityEngine.Application.Quit();
-#endif
-    }
 
     //0.2秒画面を赤くする
-    IEnumerator FlashOnMiss()
+    private IEnumerator FlashOnMistake()
     {
-        MissEffect.enabled = true;
+        MistakeEffect.enabled = true;
         yield return new WaitForSeconds(0.2f);
-        MissEffect.enabled = false;
+        MistakeEffect.enabled = false;
     }
 }

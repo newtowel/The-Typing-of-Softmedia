@@ -1,68 +1,33 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro;
-
+using UniRx;
 public class Title : MonoBehaviour
 {
     [SerializeField]
     Text StartText;
     private float TotalTime = 4;
-    private int Seconds { get; set; }
-    private bool IsSpacePressed = false;
-    //文字を点滅させる周期
-    private readonly float Interval = 0.5f;
-    private float NextTime { get; set; }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        NextTime = Time.time;
-    }
+    private int Seconds;
+    //カウントダウンしている間点滅しないように。GetKeyは押した瞬間しかtrueにならないので、それ以降は別途フラグを立てていなければならない
+    private bool IsSpacePressed { get; set; } = false;
 
     // Update is called once per frame
     void Update()
     {
-        if (Time.time > NextTime)
-        {
-            float alpha = StartText.GetComponent<CanvasRenderer>().GetAlpha();
-            if (alpha == 1)
-            {
-                StartText.GetComponent<CanvasRenderer>().SetAlpha(0);
-            }
-            else
-            {
-                StartText.GetComponent<CanvasRenderer>().SetAlpha(1);
-            }
-            NextTime += Interval;
-        }
-
         if (Input.GetKey(KeyCode.Space))
         {
             IsSpacePressed = true;
         }
-        if (IsSpacePressed)
+        //スペースキーが押されるまでは案内文字の点滅・押されたら遷移へのカウントダウン
+        if (!IsSpacePressed)
         {
-            StartText.GetComponent<CanvasRenderer>().SetAlpha(1);
-            StartText.text = Seconds.ToString();
-            TotalTime -= Time.deltaTime;
-            Seconds = (int)TotalTime;
-            if (Seconds == 0)
-            {
-                SceneManager.LoadScene("Solution");
-            }
+            TToSUtils.BlinkText(StartText);
         }
-
-        if (Input.GetKey(KeyCode.Escape)) Quit();
-
+        else
+        {
+            //点滅をやめたタイミングによっては字が薄くなっている恐れがあるので調整。
+            StartText.GetComponent<CanvasRenderer>().SetAlpha(1);
+            TToSUtils.CountDownToSceneTransition(StartText, ref Seconds, ref TotalTime, "Solution");
+        }
+        TToSUtils.QuitOnEsc();
     }
-    void Quit()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#elif UNITY_STANDALONE
-      UnityEngine.Application.Quit();
-#endif
-    }
-
 }

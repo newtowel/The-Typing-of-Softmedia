@@ -24,21 +24,15 @@ public class ScoreManager : MonoBehaviour
     //平均初速
     [SerializeField]
     Text InitialSpeed;
-    //タイトルに戻す案内
-    [SerializeField]
-    Text ReturnGuide;
     //苦手キー
     [SerializeField]
     Text WeakKeys;
-
-    //文字を点滅させる周期
-    private readonly float Interval = 0.5f;
-    private float NextTime { get; set; }
-
+    //ランキング表示シーンへの案内
+    [SerializeField]
+    Text GuidanceToRanking;
     // Start is called before the first frame update
     void Start()
     {
-        NextTime = Time.time;
         int correct = TypingSystem.CorrectNum;
         int miss = TypingSystem.MissNum;
         float acc, mips;
@@ -86,44 +80,17 @@ public class ScoreManager : MonoBehaviour
                 weakKeyRank.Add(key, 1);
             }
         }
-        //ミス回数が3回以上の物をミスタイプ回数が多い順に5種類のキーを抽出
+        //ミス回数が3回以上のキーをミスタイプ回数が多い順に5種類抽出
         var sortedRank = weakKeyRank.OrderByDescending(x => x.Value).Where(x => x.Value >= 3).Take(5);
         foreach (var item in sortedRank)
         {
             WeakKeys.text += item.Key + "(" + item.Value + ") ";
         }
     }
-    void Quit()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#elif UNITY_STANDALONE
-      UnityEngine.Application.Quit();
-#endif
-    }
-
     void Update()
     {
-        if (Time.time > NextTime)
-        {
-            float alpha = ReturnGuide.GetComponent<CanvasRenderer>().GetAlpha();
-            if (alpha == 1)
-            {
-                ReturnGuide.GetComponent<CanvasRenderer>().SetAlpha(0);
-            }
-            else
-            {
-                ReturnGuide.GetComponent<CanvasRenderer>().SetAlpha(1);
-            }
-            NextTime += Interval;
-        }
-        if (Input.GetKey(KeyCode.Return))
-        {
-            ReturnGuide.GetComponent<CanvasRenderer>().SetAlpha(1);
-            SceneManager.LoadScene("Title");
-        }
-
-        if (Input.GetKey(KeyCode.Escape)) Quit();
+        TToSUtils.QuitOnEsc();
+        TToSUtils.BlinkForSceneTransition(GuidanceToRanking, "Ranking");
     }
 
 
