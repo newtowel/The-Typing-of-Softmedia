@@ -1,19 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using UniRx;
-using System;
 
+/// <summary>
+/// TToS内全域にわたり使用する汎用機能。
+/// </summary>
 public static class TToSUtils
 {
-    //次に点滅する時刻
+    /// <summary>
+    /// 次に点滅する時刻
+    /// </summary>
     private static float NextTime { get; set; } = Time.time;
-    //点滅する周期
+    /// <summary>
+    /// 点滅する周期
+    /// </summary>
     private static float Interval { get; } = 0.5f;
     /// <summary>
-    /// エスケープキーで終了する。
+    /// エスケープキーで終了。
     /// </summary>
     public static void QuitOnEsc()
     {
@@ -29,7 +32,7 @@ public static class TToSUtils
     }
 
     /// <summary>
-    /// カウントダウン及びその表示、後にシーン遷移を行う。
+    /// カウントダウン及びその表示、後にシーン遷移。
     /// </summary>
     /// <param name="secondsText">現在の秒数を表示するUI</param>
     /// <param name="seconds">現在の秒数</param>
@@ -47,11 +50,12 @@ public static class TToSUtils
     }
 
     /// <summary>
-    /// Text UIを点滅させる。
+    /// Text UIを点滅。
     /// </summary>
     /// <param name="blinkingText">点滅させるText</param>
     public static void BlinkText(Text blinkingText)
     {
+        
         //現在時刻が点滅予定時刻を超えていれば、Textの透明度を確認、1なら0に、0なら1に、を繰り返す。
         if (Time.time > NextTime)
         {
@@ -66,9 +70,10 @@ public static class TToSUtils
             }
             NextTime += Interval;
         }
+
     }
     /// <summary>
-    /// Textを点滅させ、Enterで遷移。
+    /// Enterキー押下でシーン遷移。及びその旨を示すText表示。
     /// </summary>
     /// <param name="blinkingText">点滅させるText</param>
     /// <param name="nextScene">遷移先のシーン</param>
